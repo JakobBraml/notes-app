@@ -7,9 +7,7 @@ export default function Home() {
     const todo = todoElement.value;
         todoElement.value = "";
 
-    if(todo.length < 3) {
-        return alert("You must have at least 3 characters for your TODO item.");
-    }
+    
     const list = document.getElementById("list");
     const li = document.createElement("li");
     const text = document.createTextNode(todo);
@@ -17,21 +15,22 @@ export default function Home() {
 
     li.setAttribute("onclick", "this.remove()")
 
-
+    list.style.display = 'block';
+    
     list.appendChild(li);
 
   };
 
   return (
     <div className="list-container">
-        <h2>My Todo List</h2>
-        <ul id="list"></ul>
-        <form>
-            <label htmlFor="new-todo">New Item: </label>
-            <input type="text" id="new-todo" name="new-todo" />
-            <button type="button" onClick={addTodo}>Create</button>
+        <h2 className="title">NOTES</h2>
+        
+        <form className="row">
+            <label  htmlFor="new-todo">New Item: </label>
+            <input className="searchBox" type="text" id="new-todo" name="new-todo" />
+            <button className="button" type="button" onClick={addTodo}>Create</button>
         </form>
+        <ul className="list" id="list" style={{display: 'none'}}></ul>
     </div>
   )
 }
-
