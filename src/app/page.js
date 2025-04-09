@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 import { supabase } from '/src/app/lib/supabaseClient.js';
-
-
+import { Analytics } from "@vercel/analytics/react"
 
 export default function Home() {
   async function addNote() {
@@ -105,6 +104,7 @@ export default function Home() {
             <button className="button" type="button" onClick={addNote}>Create</button>
         </form>
         <ul className="list" id="list" style={{display: 'none'}}></ul>
+        <Analytics />
     </div>
   )
 }
