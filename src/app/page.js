@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { supabase } from '/src/app/lib/supabaseClient.js';
 import { Analytics } from "@vercel/analytics/react"
+import Link from "next/link";
 
 
 export default function Home() {
@@ -110,20 +111,20 @@ export default function Home() {
       <Analytics />
 
       <footer className="footer">
+        <Link href="/home link">
         <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
           Home
         </button>
+        </Link>
         <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
-          Profile
+          Edit
         </button>
         <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
-          Settings
+          Create
         </button>
-        <a href="https://tic-tac-toe-two-xi-61.vercel.app">
         <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
-          Tic-Tac-Toe
+          Delete
         </button>
-        </a>
       </footer>
     </div>
   )
