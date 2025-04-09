@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { supabase } from '/src/app/lib/supabaseClient.js';
 import { Analytics } from "@vercel/analytics/react"
 
+
 export default function Home() {
   async function addNote() {
     const noteElement = document.getElementById("new-note");
@@ -95,16 +96,35 @@ export default function Home() {
   }, []);  
 
   return (
-    <div className="list-container">
-        <h2 className="title">NOTES</h2>
-        
-        <form className="row">
-            <label  htmlFor="new-note">New Note: </label>
-            <input className="searchBox" type="text" id="new-note" name="new-note" />
-            <button className="button" type="button" onClick={addNote}>Create</button>
-        </form>
-        <ul className="list" id="list" style={{display: 'none'}}></ul>
-        <Analytics />
+    <div className="list-container min-h-screen pb-20 relative">
+      <h2 className="title">NOTES</h2>
+  
+      <form className="row">
+        <label htmlFor="new-note">New Note: </label>
+        <input className="searchBox" type="text" id="new-note" name="new-note" />
+        <button className="button" type="button" onClick={addNote}>Create</button>
+      </form>
+  
+      <ul className="list" id="list" style={{ display: 'none' }}></ul>
+  
+      <Analytics />
+
+      <footer className="footer">
+        <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
+          Home
+        </button>
+        <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
+          Profile
+        </button>
+        <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
+          Settings
+        </button>
+        <a href="https://tic-tac-toe-two-xi-61.vercel.app">
+        <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-2xl hover:bg-gray-700">
+          Tic-Tac-Toe
+        </button>
+        </a>
+      </footer>
     </div>
   )
-}
+}  
