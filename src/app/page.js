@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import { supabase } from '/src/app/lib/supabaseClient.js';
 import { Analytics } from "@vercel/analytics/react"
 import Link from "next/link";
-
+import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 
 export default function Home() {
   async function addNote() {
@@ -107,6 +108,22 @@ export default function Home() {
       </form>
   
       <ul className="list" id="list" style={{ display: 'none' }}></ul>
+  
+  export default function MarkdownEditor({ note, onChange }: any) {
+  return (
+    <div className="flex flex-col md:flex-row gap-4 h-full">
+      <textarea
+        className="w-full md:w-1/2 h-96 p-4 border rounded"
+        value={note}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Start typing your note in Markdown..."
+      />
+      <div className="w-full md:w-1/2 h-96 p-4 border bg-white overflow-auto rounded">
+        <ReactMarkdown>{note}</ReactMarkdown>
+      </div>
+    </div>
+  )
+}
   
       <Analytics />
 
