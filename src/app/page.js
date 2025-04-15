@@ -1,101 +1,90 @@
-"use client"
+'use client'
 
-import { useEffect } from "react";
-import { supabase } from '/src/app/lib/supabaseClient.js';
-import { Analytics } from "@vercel/analytics/react"
-import Link from "next/link";
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from '/src/app/lib/supabaseClient.js'
 import ReactMarkdown from 'react-markdown'
+import { Analytics } from "@vercel/analytics/react"
+import Link from "next/link"
 
 export default function Home() {
-  async function addNote() {
-    const noteElement = document.getElementById("new-note");
-    const note = noteElement.value.trim();
-    noteElement.value = "";
-  
-    if (!note) return;
-  
-    // Save to Supabase
-    const { data, error } = await supabase
-      .from("notes") // table name
-      .insert([{ text: note }]);
-  
-    if (error) {
-      console.error("Full Supabase Error:", JSON.stringify(error, null, 2));
-      return;
-    }
-    
-    const list = document.getElementById("list");
-    const li = document.createElement("li");
-    const text = document.createTextNode(note);
-    li.appendChild(text);
+  const [newNote, setNewNote] = useState('')
+  const [notes, setNotes] = useState([])
+  const [editingId, setEditingId] = useState(null)
+  const [editingText, setEditingText] = useState('')
 
-    li.setAttribute("onclick", "this.remove()")
-
-    list.style.display = 'block';
-    
-    list.appendChild(li);
-
-  }
-
-    // Function to delete a note from Supabase and from the UI
-    async function deleteNote(noteId, liElement) {
-      try {
-        // Delete the note from Supabase
-        const { error } = await supabase
-          .from("notes")
-          .delete()
-          .eq("id", noteId);  // Use the note ID to delete the correct note
-  
-        if (error) {
-          console.error("Error deleting from Supabase:", error);
-          return;
-        }
-  
-        // Remove the note from the UI (DOM)
-        liElement.remove();
-      } catch (error) {
-        console.error("Error deleting note:", error);
-      }
-    }
-
-  // Fetch notes from Supabase on page load
   useEffect(() => {
     async function loadNotes() {
-      // Fetching notes from Supabase
       const { data, error } = await supabase
-        .from("notes")  // Fetch from "notes" table
+        .from("notes")
         .select("*")
-        .order("inserted_at", { ascending: false });
+        .order("inserted_at", { ascending: false })
 
       if (error) {
-        console.error("Error loading notes:", error.message || error);  // Log full error message
-        return;
+        console.error("Error loading notes:", error)
+        return
       }
 
-      console.log("Fetched Notes:", data);  // Log the fetched data
-
-      const list = document.getElementById("list");
-
-      // Ensure that list is visible if data is present
-      if (data.length > 0) {
-        list.style.display = "block";  // Show the list
-      }
-
-      // Clear the list before adding new data
-      list.innerHTML = "";
-
-      // Add fetched notes to the list
-      data.forEach(({ text }) => {
-        const li = document.createElement("li");
-        li.appendChild(document.createTextNode(text));
-        li.setAttribute("onclick", "this.remove()");
-        list.appendChild(li);
-      });
+      setNotes(data)
     }
 
-    loadNotes();
-  }, []);  
+    loadNotes()
+  }, [])
+
+  const addNote = async () => {
+    if (!newNote.trim()) return
+
+    const { data, error } = await supabase
+      .from("notes")
+      .insert([{ text: newNote.trim() }])
+      .select()
+
+    if (error) {
+      console.error("Error adding note:", error)
+      return
+    }
+
+    setNotes([...(data || []), ...notes])
+    setNewNote('')
+  }
+
+  const deleteNote = async (id) => {
+    const { error } = await supabase
+      .from("notes")
+      .delete()
+      .eq("id", id)
+
+    if (error) {
+      console.error("Error deleting note:", error)
+      return
+    }
+
+    setNotes(notes.filter(note => note.id !== id))
+  }
+
+  const startEditing = (note) => {
+    setEditingId(note.id)
+    setEditingText(note.text)
+  }
+
+  const cancelEditing = () => {
+    setEditingId(null)
+    setEditingText('')
+  }
+
+  const saveEdit = async () => {
+    const { error } = await supabase
+      .from("notes")
+      .update({ text: editingText })
+      .eq("id", editingId)
+
+    if (error) {
+      console.error("Error updating note:", error)
+      return
+    }
+
+    setNotes(notes.map(n => n.id === editingId ? { ...n, text: editingText } : n))
+    cancelEditing()
+  }
 
   return (
     <div className="list-container min-h-screen pb-20 relative">
@@ -103,27 +92,59 @@ export default function Home() {
   
       <form className="row">
         <label htmlFor="new-note">New Note: </label>
-        <input className="searchBox" type="text" id="new-note" name="new-note" />
+        <input className="searchBox" type="text" id="new-note" name="new-note" onChange={(e) => setNewNote(e.target.value)}/>
         <button className="button" type="button" onClick={addNote}>Create</button>
       </form>
   
-      <ul className="list" id="list" style={{ display: 'none' }}></ul>
-  
-  export default function MarkdownEditor({ note, onChange }: any) {
-  return (
-    <div className="flex flex-col md:flex-row gap-4 h-full">
-      <textarea
-        className="w-full md:w-1/2 h-96 p-4 border rounded"
-        value={note}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Start typing your note in Markdown..."
-      />
-      <div className="w-full md:w-1/2 h-96 p-4 border bg-white overflow-auto rounded">
-        <ReactMarkdown>{note}</ReactMarkdown>
-      </div>
-    </div>
-  )
-}
+      <ul className="space-y-4">
+          {notes.map((note) => (
+            <li key={note.id} className="row">
+              {editingId === note.id ? (
+                <>
+                  <textarea
+                    className="w-full border p-2 rounded"
+                    rows={5}
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={saveEdit}
+                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={cancelEditing}
+                      className="bg-gray-300 text-black px-3 py-1 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <ReactMarkdown>{note.text}</ReactMarkdown>
+                  <div className="flex gap-4 mt-2">
+                    <button
+                      onClick={() => startEditing(note)}
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="text-red-600 hover:underline text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+
   
       <Analytics />
 
@@ -145,4 +166,4 @@ export default function Home() {
       </footer>
     </div>
   )
-}  
+}
